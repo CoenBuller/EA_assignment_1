@@ -5,19 +5,63 @@ import numpy as np
 # https://pypi.org/project/ioh/
 import ioh
 from ioh import get_problem, logger, ProblemClass
+from numpy.random import MT19937
+from numpy.random import RandomState, SeedSequence
 
 budget = 5000
+rs = RandomState(MT19937(SeedSequence(69))) # Nice
 
 # To make your results reproducible (not required by the assignment), you could set the random seed by
 # `np.random.seed(some integer, e.g., 42)`
 
+
+def crossover(pop, pop_f, n_offspring, n_crossovers):
+    """Function to handle the crossover"""
+
+    def cross(parent1, parent2, n_cross):
+        """Small helper function to do the crossover between two parents"""
+        child = np.zeros_like(parent1)
+        split_idx = np.linspace(0, len(parent1), n_cross, dtype=np.int8)[1:]
+
+        for i in range(len(split_idx)):
+            idx = split_idx[i]
+            prev_idx = split_idx[i-1]
+
+            choice = rs.choice(2, 1)
+            if choice == 0: # If 0, we choose parent1 -> else parent 2
+                child[prev_idx: idx] = parent1[prev_idx: idx]
+            else:
+                child[prev_idx: idx] = parent2[prev_idx: idx]
+                
+        return child
+    
+    # We use softmax to determine weight
+    exp_p = np.exp(pop_f)
+    weights = exp_p/(np.sum(exp_p)) # Higher probability to mate when parent has high score
+
+    mating = rs.choice(pop, size=2*n_offspring, p=weights, replace=True)
+    offspring = []
+    for i in range(1, len(mating), 2):
+        offspring[i] = cross(pop[i-1], pop[i], n_cross=n_crossovers)
+    
+    return offspring
+
+
 def studentnumber1_studentnumber2_GA(problem: ioh.problem.PBO) -> None:
     # initial_pop = ... make sure you randomly create the first population
+
+    MU = 10 # Population size
+    LAMBDA = 20 # Offspring size
+
+    pop = rs.choice(2, (MU, problem.bounds.lb.shape[0]), replace=True)
+    pop_f = problem(pop)
 
     # `problem.state.evaluations` counts the number of function evaluation automatically,
     # which is incremented by 1 whenever you call `problem(x)`.
     # You could also maintain a counter of function evaluations if you prefer.
     while problem.state.evaluations < budget:
+
+
         # please implement the mutation, crossover, selection here
         # .....
         # this is how you evaluate one solution `x`
