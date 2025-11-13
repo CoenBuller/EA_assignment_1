@@ -54,7 +54,7 @@ def mutation(offspring, p_mutate):
 
     p_not_mutate = 1 - p_mutate # Probability the bit wont mutate
     mutation_array = rs.choice(2, offspring.shape, replace=True, p=[p_not_mutate, p_mutate]) # Mutate according to np.abs(bit_val - 1) if mutate is true
-    offspring = np.abs(offspring - mutation_array).astype(int)
+    offspring = np.abs(offspring - mutation_array).astype(np.int64)
     return offspring
 
 
@@ -64,7 +64,7 @@ def selection(parents, parents_f, offspring, offspring_f, mu_plus_lambda, top_k)
     else: 
         population, population_f = offspring, offspring_f
 
-    best_idx = np.argsort(population_f)[:top_k]
+    best_idx = np.argsort(-population_f)[:top_k]
     return population[best_idx], population_f[best_idx]
 
 
@@ -98,7 +98,8 @@ def s2631415_studentnumber2_GA(problem: ioh.problem.PBO) -> None:
         
         parents, parents_f = selection(parents, parents_f, offspring, offspring_f, MU_PLUS_LAMBDA, MU)
         if budget % 1000 == 0:
-            print(problem.state)
+            ...
+            # print(problem.state)
         
         # this is how you evaluate one solution `x`
         # f = problem(x)
@@ -125,10 +126,12 @@ def create_problem(dimension: int, fid: int) -> Tuple[ioh.problem.PBO, ioh.logge
 if __name__ == "__main__":
     # this how you run your algorithm with 20 repetitions/independent run
     # create the LABS problem and the data logger
-    F18, _logger = create_problem(dimension=50, fid=18)
-    for run in range(20): 
+    F18, _logger = create_problem(dimension=6, fid=18)
+    for run in range(1): 
         s2631415_studentnumber2_GA(F18)
         F18.reset() # it is necessary to reset the problem after each independent run
+    print(F18(list([0,0,0,0,0,0])))
+    print(F18.optimum)
     _logger.close() # after all runs, it is necessary to close the logger to make sure all data are written to the folder
 
     # create the N-Queens problem and the data logger
