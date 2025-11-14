@@ -16,8 +16,8 @@ budget = 100000000
 
 bounds = ([10, 200], # Population size
           [0.01, 0.1], # Mutation rate
-          [0.1, 0.9], # Crossover rate
-          [20, 200]) # offspring size
+          [0.1, 0.9], # Crossover probability
+          [True, False]) # (mu+lambda), or (mu, lambda)
 
 configs = draw_sobol_samples(*bounds, n_dims=4) # Draws Sobol samples from specified bounds in these dimensions
 
@@ -30,15 +30,16 @@ def tune_hyperparameters() -> List:
     F18, _logger = create_problem(dimension=50, fid=18)
     # create the N-Queens problem and the data logger
     F23, _logger = create_problem(dimension=49, fid=23)
-    
+    budgets = [1000, 2000, 3000, 4000, 5000]
+    for budget in budgets:
+        for config in configs:
+            mu, p_mutate, crossover_r, mu_plus_lambda= config
+            s2631415_studentnumber2_GA(problem=F18, mu_plus_lambda=mu_plus_lambda, mu=mu, p_crossover=crossover_r, mutation_r=p_mutate, budget=budget)
+            s2631415_studentnumber2_GA(problem=F23,  mu_plus_lambda=mu_plus_lambda, mu=mu, p_crossover=crossover_r, mutation_r=p_mutate, budget=budget)   
 
-
-    for pop_size in hyperparameter_space['population_size']:
-        for mutation_rate in hyperparameter_space['mutation_rate']:
-            for crossover_rate in hyperparameter_space['crossover_rate']:
-                
-                
-
+            # ----------------------------- To Do --------------------------------
+            # We need to find a way to evaluate the the performances. this can probably be done through the logger of the 'create_problem()' function and fit a log function to it. 
+            # The file for the log function is also added to the rep
     return best_params
 
 
