@@ -42,7 +42,7 @@ def mutation(offspring, p_mutate):
     p_not_mutate = 1 - p_mutate # Probability the bit wont mutate
     mutation_array = rs.choice(2, offspring.shape, replace=True, p=[p_not_mutate, p_mutate]) # Mutate according to np.abs(bit_val - 1) if mutate is true
     offspring = np.abs(offspring - mutation_array).astype(np.int64)
-    return list(offspring)
+    return offspring
 
 
 def selection(parents, parents_f, offspring, offspring_f, mu_plus_lambda, top_k):
@@ -56,7 +56,7 @@ def selection(parents, parents_f, offspring, offspring_f, mu_plus_lambda, top_k)
 
 
 
-def s2631415_studentnumber2_GA(problem: ioh.problem.PBO, mu_plus_lambda=True, mu=10, p_crossover=0.5, mutation_r=0.02, budget=5000) -> None:
+def s2631415_studentnumber2_GA(problem: ioh.problem.PBO, mu_plus_lambda=True, mu=17, p_crossover=0.82, mutation_r=0.0306, budget=5000) -> None:
 
     parents = rs.choice(2, (mu, problem.bounds.lb.shape[0]), replace=True)
     parents_f = problem(parents) # type: ignore

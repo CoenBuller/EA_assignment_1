@@ -6,6 +6,7 @@ import numpy as np
 # https://pypi.org/project/ioh/
 from ioh import get_problem, logger, ProblemClass
 from GA import s2631415_studentnumber2_GA, create_problem
+from ES import student4398270, create_problem
 
 budget = 100000000
 

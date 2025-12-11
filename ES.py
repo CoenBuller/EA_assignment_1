@@ -19,7 +19,7 @@ def discrete_recombination(parents):
         offspring[i] = rs.choice(parents[:, i])
     return offspring
 
-def student4398270(problem: ioh.problem.PBO, mu=5, lambda_=20, budget=5000) -> None:
+def student4398270(problem: ioh.problem.PBO, mu=30, lambda_=25, budget=5000) -> None:
     """
     ES with
     - (mu + lambda) selection
