@@ -31,10 +31,10 @@ def evaluate_configuration(algorithm_func, params, problem_fid, dimension):
         avg_fitness /= REPETITIONS
         results.append((budget, avg_fitness))
     
-    # Fit the learning curve
+    # fit the learning curve
     fit_output = IPL.fit_inverse_power(results)
     
-    # Unpack the tuple (popt, pcov) returned by log.py
+    # Unpack the tuple (popt, pcov) from log.py
     if isinstance(fit_output, tuple):
         popt = fit_output[0]
     else:
@@ -92,7 +92,6 @@ def tune_es():
     print("\n--- Tuning Evolutionary Strategy  ---")
     #Define Bounds
     # mu: [1, 50], lambda: [1, 50]
-    # Note: Using the ES signature: student4398270(problem, mu=5, lambda_=20, budget=5000)
     bounds = np.array([[1, 50], [1, 50]])
     
     #Draw Samples
