@@ -69,7 +69,7 @@ def mutation(offspring, p_mutate):
     # 1 - 1 = 0 (Flip)
     # np.abs(...) ensures the result is a binary string.
     offspring = np.abs(offspring - mutation_array).astype(np.int64)
-    return list(offspring)
+    return offspring
 
 
 def selection(parents, parents_f, offspring, offspring_f, mu_plus_lambda, top_k):

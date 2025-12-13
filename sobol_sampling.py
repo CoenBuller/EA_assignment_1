@@ -21,7 +21,7 @@ def draw_sobol_samples(*bounds_list, n_dims, n_samples=2**10, scramble=True, see
     sampler = qmc.Sobol(d=n_dims, scramble=scramble, seed=seed)
 
     if (n_samples & (n_samples - 1)) == 0: 
-        m = np.log2(n_samples)
+        m = int(np.log2(n_samples))
         samples = sampler.random_base2(m)
     else:
         samples = sampler.random(n_samples)
