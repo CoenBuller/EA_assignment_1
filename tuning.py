@@ -14,10 +14,11 @@ budget = 100000000
 
 # Hyperparameters to tune, e.g.
 
-bounds = ([10, 200], # Population size
+bounds = (
+          [10, 200], # Population size
           [0.01, 0.1], # Mutation rate
-          [0.1, 0.9], # Crossover probability
-          [True, False]) # (mu+lambda), or (mu, lambda)
+          [0.1, 0.9] # Crossover probability
+          ) 
 
 configs = draw_sobol_samples(*bounds, n_dims=4) # Draws Sobol samples from specified bounds in these dimensions
 
@@ -27,23 +28,22 @@ def tune_hyperparameters() -> List:
     best_score = float('inf')
     best_params = None
     # create the LABS problem and the data logger
-    F18, _logger = create_problem(dimension=50, fid=18)
+    F18, _logger1 = create_problem(dimension=50, fid=18)
     # create the N-Queens problem and the data logger
-    F23, _logger = create_problem(dimension=49, fid=23)
+    F23, _logger2 = create_problem(dimension=49, fid=23)
     budgets = [1000, 2000, 3000, 4000, 5000]
     for budget in budgets:
         for config in configs:
             mu, p_mutate, crossover_r, mu_plus_lambda= config
-            s2631415_studentnumber2_GA(problem=F18, mu_plus_lambda=mu_plus_lambda, mu=mu, p_crossover=crossover_r, mutation_r=p_mutate, budget=budget)
-            s2631415_studentnumber2_GA(problem=F23,  mu_plus_lambda=mu_plus_lambda, mu=mu, p_crossover=crossover_r, mutation_r=p_mutate, budget=budget)   
+            min18, max18 = s2631415_studentnumber2_GA(problem=F18, mu_plus_lambda=mu_plus_lambda, mu=mu, p_crossover=crossover_r, mutation_r=p_mutate, budget=budget)
+            min23, max23 = s2631415_studentnumber2_GA(problem=F23,  mu_plus_lambda=mu_plus_lambda, mu=mu, p_crossover=crossover_r, mutation_r=p_mutate, budget=budget) 
 
-            # ----------------------------- To Do --------------------------------
-            # We need to find a way to evaluate the the performances. this can probably be done through the logger of the 'create_problem()' function and fit a log function to it. 
-            # The file for the log function is also added to the rep
+            # Standardize the scores to range of [0, 1] so we can compare
     return best_params
 
 
 if __name__ == "__main__":
+    
     # Hyperparameter tuning to determine the best parameters for both problems
     population_size, mutation_rate, crossover_rate = tune_hyperparameters()
     print(population_size)
