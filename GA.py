@@ -87,13 +87,13 @@ def selection(parents, parents_f, offspring, offspring_f, mu_plus_lambda, top_k)
 
     # Sort the population based on fitness (population_f) in descending order (highest fitness is best)
     # np.argsort returns the indices that would sort the array
-    best_idx = np.argsort(-np.abs(population_f))[:top_k]
+    best_idx = np.argsort(-population_f)[:top_k]
     
     # Return the top_k individuals and their fitness scores
     return population[best_idx], population_f[best_idx]
 
 
-def s2631415_studentnumber2_GA(problem: ioh.problem.PBO, mu_plus_lambda=True, mu=10, p_crossover=0.5, mutation_r=0.02, budget=5000) -> tuple[float|int, float|int]:
+def s2631415_studentnumber2_GA(problem: ioh.problem.PBO, mu_plus_lambda=True, mu=10, p_crossover=0.5, mutation_r=0.02, budget=2500) -> tuple[float|int, float|int, float]:
     """
     The main Genetic Algorithm (GA) loop.
     
@@ -112,15 +112,12 @@ def s2631415_studentnumber2_GA(problem: ioh.problem.PBO, mu_plus_lambda=True, mu
     
     # Evaluate the initial population
     parents_f = problem(parents) # problem(pop) automatically evaluates all individuals in the batch
-    min_f, max_f = float('inf'), -float('inf') # Min, and max evaluation values
+    min_f, max_f = min(parents_f), max(parents_f) # Min, and max evaluation values
 
     # Main Evolutionary Loop
     # Check the number of evaluations using problem.state.evaluations (automatically tracked by IOH)
     while problem.state.evaluations < budget:
         # Update min and max for normalization of the scores
-        min_, max_ = min(parents_f), max(parents_f)
-        min_f = min_ if min_ < min_f else min_f
-        max_f = max_ if max_ > max_f else max_f 
 
         # 1. Crossover: Generate the offspring population (lambda = mu in this setup)
         offspring = crossover(parents, parents_f, p_cross=p_crossover)
@@ -140,7 +137,7 @@ def s2631415_studentnumber2_GA(problem: ioh.problem.PBO, mu_plus_lambda=True, mu
             ...
             # print(f"Problem: {problem}, Evaluations: {problem.state.evaluations}, Best: {np.max(parents_f)}")
         
-    return min_f, max_f
+    return min_f, max_f, max(parents_f)
 
 
 def create_problem(dimension: int, fid: int) -> Tuple[ioh.problem.PBO, ioh.logger.Analyzer]:
@@ -167,18 +164,24 @@ if __name__ == "__main__":
     
     # F18 (LABS) - Dimension 50
     F18, _logger = create_problem(dimension=50, fid=18)
-    for run in range(20): 
-        s2631415_studentnumber2_GA(F18)
+    for run in range(1): 
+        min18, max18, maximum18 = s2631415_studentnumber2_GA(F18)
+        print(f"\n Standardized increase compared to parents for F18 problem: {abs((maximum18-max18)/(max18))}")
+        print(f"Absolute best: {maximum18} | Parents best: {max18} | Parents worst: {min18}")
+
         F18.reset() # Reset is necessary to start a new independent run with clean state/FE count
     _logger.close() # Close logger to ensure all data is written to the file system
 
     # F23 (N-Queens) - Dimension 49 (7x7 board)
     F23, _logger = create_problem(dimension=49, fid=23)
-    for run in range(20): 
-        s2631415_studentnumber2_GA(F23)
+    for run in range(1): 
+        min23, max23, maximum23 = s2631415_studentnumber2_GA(F23)
+        print(f"\n Standardized increase compared to parents for F23 problem: {abs((maximum23-max23)/(max23))}")
+        print(f"Absolute best: {maximum23} | Parents best: {max23} | Parents worst: {min23}")
         F23.reset()
     _logger.close()
 
+    
 # The next step should be to update tuning.py based on the plan we discussed:
 # 1. Select only 5 configurations.
 # 2. Run each configuration for R=2 runs on both F18 and F23.
