@@ -30,12 +30,10 @@ def crossover(pop, pop_f, p_cross):
         return p1, p2
     
     # 1. Selection of Mating Pairs (Softmax-Weighted)
-    # Use softmax to determine selection weights based on fitness (pop_f)
-    # Softmax ensures individuals with higher fitness have exponentially higher probability of being selected.
     exp_p = np.exp(pop_f - np.max(pop_f)) # Shift by max(pop_f) for numerical stability
     weights = exp_p/(np.sum(exp_p)) # Normalize to sum to 1
 
-    # Select indices for mating pairs. Size is 2 * population size for a standard GA.
+    # For crossover we need for each offspring two parents. This means that we need to sample 2 * pop number of parents
     mating_idx = rs.choice(pop.shape[0], size=2*len(pop), p=weights, replace=True)
     mating = pop[mating_idx]
 
@@ -93,7 +91,7 @@ def selection(parents, parents_f, offspring, offspring_f, mu_plus_lambda, top_k)
     return population[best_idx], population_f[best_idx]
 
 
-def s2631415_studentnumber2_GA(problem: ioh.problem.PBO, mu_plus_lambda=True, mu=10, p_crossover=0.5, mutation_r=0.02, budget=2500) -> tuple[float|int, float|int, float]:
+def s2631415_studentnumber2_GA(problem: ioh.problem.PBO, mu_plus_lambda=True, mu=10, p_crossover=0.5, mutation_r=0.02, budget=5000) -> tuple[float|int, float|int, float]:
     """
     The main Genetic Algorithm (GA) loop.
     
@@ -164,7 +162,7 @@ if __name__ == "__main__":
     
     # F18 (LABS) - Dimension 50
     F18, _logger = create_problem(dimension=50, fid=18)
-    for run in range(1): 
+    for run in range(20): 
         min18, max18, maximum18 = s2631415_studentnumber2_GA(F18)
         print(f"\n Standardized increase compared to parents for F18 problem: {abs((maximum18-max18)/(max18))}")
         print(f"Absolute best: {maximum18} | Parents best: {max18} | Parents worst: {min18}")
@@ -174,7 +172,7 @@ if __name__ == "__main__":
 
     # F23 (N-Queens) - Dimension 49 (7x7 board)
     F23, _logger = create_problem(dimension=49, fid=23)
-    for run in range(1): 
+    for run in range(20): 
         min23, max23, maximum23 = s2631415_studentnumber2_GA(F23)
         print(f"\n Standardized increase compared to parents for F23 problem: {abs((maximum23-max23)/(max23))}")
         print(f"Absolute best: {maximum23} | Parents best: {max23} | Parents worst: {min23}")
