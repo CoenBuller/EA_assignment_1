@@ -1,2 +1,5 @@
 #skip the notes file
 *notes.txt
+
+# Ignore pyc
+*.pyc
