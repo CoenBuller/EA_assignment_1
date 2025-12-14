@@ -6,10 +6,32 @@ import pandas as pd
 from ioh import get_problem, logger, ProblemClass
 from numpy.random import MT19937
 from numpy.random import RandomState, SeedSequence
+from OneHot import decode_queens
 
 # Initialize a reproducible random state using a seed sequence
 # This is crucial for making your experiments (like tuning) reproducible.
 rs = RandomState(MT19937(SeedSequence(69))) 
+
+
+def initialize(mu: int, problem: object):
+    if isinstance(problem, ioh.iohcpp.problem.NQueens): # Initialization for F23 
+        """Ïn each row and each column we need at most one queen. 
+        We can leverage this during the initialization. Now the algorithm only needs to sort out the diagonal problem"""
+        pop = [] # List to store all the bit strings in
+        queen_pos = np.arange(0, 7) 
+        for _ in range(mu):
+
+            individual = rs.permutation(queen_pos)
+            individual = decode_queens(individual)
+            assert(len(individual) == 49)
+            pop.append(individual)
+
+        return np.array(pop)
+
+    return rs.choice(2, (mu, problem.bounds.lb.shape[0]), replace=True) # initialization for F18
+
+
+
 
 def crossover(pop, pop_f, p_cross):
     """
@@ -91,7 +113,7 @@ def selection(parents, parents_f, offspring, offspring_f, mu_plus_lambda, top_k)
     return population[best_idx], population_f[best_idx]
 
 
-def s2631415_studentnumber2_GA(problem: ioh.problem.PBO, mu_plus_lambda=True, mu=10, p_crossover=0.5, mutation_r=0.02, budget=5000) -> tuple[float|int, float|int, float]:
+def s2631415_studentnumber2_GA(problem: ioh.problem.PBO, mu_plus_lambda=True, mu=20, p_crossover=0.5, mutation_r=0.02, budget=5000) -> tuple[float|int, float|int, float]:
     """
     The main Genetic Algorithm (GA) loop.
     
@@ -106,7 +128,7 @@ def s2631415_studentnumber2_GA(problem: ioh.problem.PBO, mu_plus_lambda=True, mu
 
     # Initialization: Create the initial population (mu individuals)
     # The individual length is determined by the problem dimension (problem.bounds.lb.shape[0])
-    parents = rs.choice(2, (mu, problem.bounds.lb.shape[0]), replace=True)
+    parents = initialize(mu, problem)
     
     # Evaluate the initial population
     parents_f = problem(parents) # problem(pop) automatically evaluates all individuals in the batch
@@ -162,7 +184,7 @@ if __name__ == "__main__":
     
     # F18 (LABS) - Dimension 50
     F18, _logger = create_problem(dimension=50, fid=18)
-    for run in range(20): 
+    for run in range(1): 
         min18, max18, maximum18 = s2631415_studentnumber2_GA(F18)
         print(f"\n Standardized increase compared to parents for F18 problem: {abs((maximum18-max18)/(max18))}")
         print(f"Absolute best: {maximum18} | Parents best: {max18} | Parents worst: {min18}")
@@ -172,10 +194,13 @@ if __name__ == "__main__":
 
     # F23 (N-Queens) - Dimension 49 (7x7 board)
     F23, _logger = create_problem(dimension=49, fid=23)
-    for run in range(20): 
+    for run in range(1): 
         min23, max23, maximum23 = s2631415_studentnumber2_GA(F23)
         print(f"\n Standardized increase compared to parents for F23 problem: {abs((maximum23-max23)/(max23))}")
         print(f"Absolute best: {maximum23} | Parents best: {max23} | Parents worst: {min23}")
+
+        print(F23)
+
         F23.reset()
     _logger.close()
 

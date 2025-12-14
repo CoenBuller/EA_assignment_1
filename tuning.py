@@ -17,8 +17,8 @@ budget = 100000
 
 bounds = (
           [10, 200], # Population size
-          [0.01, 0.1], # Mutation rate
-          [0.1, 0.9] # Crossover probability
+          [0.02, 0.1], # Mutation rate
+          [0.1, 0.5] # Crossover probability
           ) 
 
 configs = draw_sobol_samples(*bounds, n_dims=4) # Draws Sobol samples from specified bounds in these dimensions
@@ -27,24 +27,22 @@ configs = draw_sobol_samples(*bounds, n_dims=4) # Draws Sobol samples from speci
 def tune_hyperparameters() -> List:
     # You should decide/engineer the `score` youself, which is the tuning objective
     best_score = -float('inf')
-    best_params = None
+    best_params = []
     # create the LABS problem and the data logger
     F18, _logger1 = create_problem(dimension=50, fid=18)
     # create the N-Queens problem and the data logger
     F23, _logger2 = create_problem(dimension=49, fid=23)
-    budgets = [1000, 2000, 3000, 4000]
-    for budget in budgets:
-        for config in configs:
-            mu, p_mutate, crossover_r, mu_plus_lambda = config
-            initial_min18, initial_max18, best_score18 = s2631415_studentnumber2_GA(problem=F18, mu_plus_lambda=mu_plus_lambda, mu=mu, p_crossover=crossover_r, mutation_r=p_mutate, budget=budget)
-            initial_min23, initial_max23, best_score23 = s2631415_studentnumber2_GA(problem=F23,  mu_plus_lambda=mu_plus_lambda, mu=mu, p_crossover=crossover_r, mutation_r=p_mutate, budget=5000-budget) 
+    for config in configs:
+        mu, p_mutate, crossover_r, mu_plus_lambda = config
+        initial_min18, initial_max18, best_score18 = s2631415_studentnumber2_GA(problem=F18, mu_plus_lambda=mu_plus_lambda, mu=mu, p_crossover=crossover_r, mutation_r=p_mutate, budget=budget)
+        initial_min23, initial_max23, best_score23 = s2631415_studentnumber2_GA(problem=F23,  mu_plus_lambda=mu_plus_lambda, mu=mu, p_crossover=crossover_r, mutation_r=p_mutate, budget=5000-budget) 
 
-            # These scores measure with what factor the fitness increased relative to maximum fitness at initialization
-            score18 = abs((best_score18 - initial_max18)/initial_max18)
-            score23 = abs((best_score23 - initial_max23)/initial_max23)
-            total_score = score18 + score23 # The total score is just the sums of the individual scores of F18 and F23
-            if total_score > best_score:
-                best_score, best_params = total_score, config
+        # These scores measure with what factor the fitness increased relative to maximum fitness at initialization
+        score18 = abs((best_score18 - initial_max18)/initial_max18)
+        score23 = abs((best_score23 - initial_max23)/initial_max23)
+        total_score = score18 + score23 # The total score is just the sums of the individual scores of F18 and F23
+        if total_score > best_score:
+            best_score, best_params = total_score, config
 
     return best_params
 
