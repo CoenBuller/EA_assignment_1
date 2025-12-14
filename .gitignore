@@ -3,3 +3,6 @@
 
 # Ignore pyc
 *.pyc
+
+# Ignore data
+data*
