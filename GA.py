@@ -113,7 +113,7 @@ def selection(parents, parents_f, offspring, offspring_f, mu_plus_lambda, top_k)
     return population[best_idx], population_f[best_idx]
 
 
-def s2631415_studentnumber2_GA(problem: ioh.problem.PBO, mu_plus_lambda=True, mu=20, p_crossover=0.5, mutation_r=0.02, budget=5000) -> tuple[float|int, float|int, float]:
+def s2631415_studentnumber2_GA(problem: ioh.problem.PBO, mu_plus_lambda=True, mu=20, p_crossover=0.5, mutation_r=0.02, budget=5000, initial_pop=None) -> tuple[float|int, float|int, float]:
     """
     The main Genetic Algorithm (GA) loop.
     
@@ -128,7 +128,10 @@ def s2631415_studentnumber2_GA(problem: ioh.problem.PBO, mu_plus_lambda=True, mu
 
     # Initialization: Create the initial population (mu individuals)
     # The individual length is determined by the problem dimension (problem.bounds.lb.shape[0])
-    parents = initialize(mu, problem)
+    if initial_pop is None:
+        parents = initialize(mu, problem)
+    else:
+        parents = initial_pop
     
     # Evaluate the initial population
     parents_f = problem(parents) # problem(pop) automatically evaluates all individuals in the batch

@@ -5,9 +5,10 @@ import numpy as np
 # https://iohprofiler.github.io/IOHexp/ and
 # https://pypi.org/project/ioh/
 from ioh import get_problem, logger, ProblemClass
-from GA import s2631415_studentnumber2_GA, create_problem
+from GA import s2631415_studentnumber2_GA, create_problem, initialize
 from ES import student4398270, create_problem
 
+seed = 69
 budget = 100000
 
 # To make your results reproducible (not required by the assignment), you could set the random seed by
@@ -16,7 +17,6 @@ budget = 100000
 # Hyperparameters to tune, e.g.
 
 bounds = (
-          [10, 200], # Population size
           [0.02, 0.1], # Mutation rate
           [0.1, 0.5] # Crossover probability
           ) 
@@ -32,10 +32,14 @@ def tune_hyperparameters() -> List:
     F18, _logger1 = create_problem(dimension=50, fid=18)
     # create the N-Queens problem and the data logger
     F23, _logger2 = create_problem(dimension=49, fid=23)
+
+    initial_pop18 = initialize(mu=250, problem=F18)
+    initial_pop23 = initialize(mu=250, problem=F23)
+
     for config in configs:
-        mu, p_mutate, crossover_r, mu_plus_lambda = config
-        initial_min18, initial_max18, best_score18 = s2631415_studentnumber2_GA(problem=F18, mu_plus_lambda=mu_plus_lambda, mu=mu, p_crossover=crossover_r, mutation_r=p_mutate, budget=budget)
-        initial_min23, initial_max23, best_score23 = s2631415_studentnumber2_GA(problem=F23,  mu_plus_lambda=mu_plus_lambda, mu=mu, p_crossover=crossover_r, mutation_r=p_mutate, budget=5000-budget) 
+        mu, p_mutate, crossover_r = config
+        _, initial_max18, best_score18 = s2631415_studentnumber2_GA(problem=F18, mu_plus_lambda=True, mu=mu, p_crossover=crossover_r, mutation_r=p_mutate, budget=5000, initial_pop=initial_pop18)
+        _, initial_max23, best_score23 = s2631415_studentnumber2_GA(problem=F23,  mu_plus_lambda=True, mu=mu, p_crossover=crossover_r, mutation_r=p_mutate, budget=5000, initial_pop=initial_pop23) 
 
         # These scores measure with what factor the fitness increased relative to maximum fitness at initialization
         score18 = abs((best_score18 - initial_max18)/initial_max18)
