@@ -1,60 +1,89 @@
-from typing import List
-from sobol_sampling import draw_sobol_samples
+from typing import Tuple
 import numpy as np
-# you need to install this package `ioh`. Please see documentations here: 
-# https://iohprofiler.github.io/IOHexp/ and
-# https://pypi.org/project/ioh/
-from ioh import get_problem, logger, ProblemClass
+from tqdm import tqdm
 from GA import s2631415_studentnumber2_GA, create_problem, initialize
-from ES import student4398270, create_problem
 
-seed = 69
-budget = 100000
 
-# To make your results reproducible (not required by the assignment), you could set the random seed by
-# `np.random.seed(some integer, e.g., 42)`
+# Tuning settings
+TOTAL_TUNING_BUDGET = 100_000
+BUDGET_PER_RUN = 5_000     # per problem
+SEED = 69
 
-# Hyperparameters to tune, e.g.
+np.random.seed(SEED)
 
-bounds = (
-          [0.02, 0.1], # Mutation rate
-          [0.1, 0.5] # Crossover probability
-          ) 
+# Hyperparameter ranges
+MU_RANGE = (20, 250)
+MUT_RANGE = (0.02, 0.1)
+CROSS_RANGE = (0.1, 0.5)
 
-configs = draw_sobol_samples(*bounds, n_dims=4) # Draws Sobol samples from specified bounds in these dimensions
+# Each config costs 2 * BUDGET_PER_RUN
+COST_PER_CONFIG = 2 * BUDGET_PER_RUN
+N_CONFIGS = TOTAL_TUNING_BUDGET // COST_PER_CONFIG
 
-# Hyperparameter tuning function
-def tune_hyperparameters() -> List:
-    # You should decide/engineer the `score` youself, which is the tuning objective
-    best_score = -float('inf')
-    best_params = []
-    # create the LABS problem and the data logger
-    F18, _logger1 = create_problem(dimension=50, fid=18)
-    # create the N-Queens problem and the data logger
-    F23, _logger2 = create_problem(dimension=49, fid=23)
 
-    initial_pop18 = initialize(mu=250, problem=F18)
-    initial_pop23 = initialize(mu=250, problem=F23)
+# Start tuning
+def sample_config() -> Tuple[int, float, float]:
+    """Sample one random hyperparameter configuration."""
+    p_mut = np.random.uniform(*MUT_RANGE)
+    p_cross = np.random.uniform(*CROSS_RANGE)
+    mu = np.random.uniform(*MU_RANGE)
+    return int(mu), p_mut, p_cross
 
-    for config in configs:
-        mu, p_mutate, crossover_r = config
-        _, initial_max18, best_score18 = s2631415_studentnumber2_GA(problem=F18, mu_plus_lambda=True, mu=mu, p_crossover=crossover_r, mutation_r=p_mutate, budget=5000, initial_pop=initial_pop18)
-        _, initial_max23, best_score23 = s2631415_studentnumber2_GA(problem=F23,  mu_plus_lambda=True, mu=mu, p_crossover=crossover_r, mutation_r=p_mutate, budget=5000, initial_pop=initial_pop23) 
 
-        # These scores measure with what factor the fitness increased relative to maximum fitness at initialization
-        score18 = abs((best_score18 - initial_max18)/initial_max18)
-        score23 = abs((best_score23 - initial_max23)/initial_max23)
-        total_score = score18 + score23 # The total score is just the sums of the individual scores of F18 and F23
-        if total_score > best_score:
-            best_score, best_params = total_score, config
+def tune_hyperparameters():
+    best_score = (-np.inf, -np.inf)
+    best_params = (None, None, None)
+    print(f"Testing {N_CONFIGS} configurations")
+    for _ in tqdm(range(N_CONFIGS)):
+        mu, p_mut, p_cross = sample_config()
 
-    return best_params
+        # --- F18 ---
+        F18, _ = create_problem(dimension=50, fid=18)
+        init_pop18 = initialize(mu, F18)
+
+        _, init_max18, best18 = s2631415_studentnumber2_GA(
+            problem=F18,
+            mu=mu,
+            p_crossover=p_cross,
+            mutation_r=p_mut,
+            budget=BUDGET_PER_RUN,
+            initial_pop=init_pop18
+        )
+
+        # --- F23 ---
+        F23, _ = create_problem(dimension=49, fid=23)
+        init_pop23 = initialize(mu, F23)
+
+        _, init_max23, best23 = s2631415_studentnumber2_GA(
+            problem=F23,
+            mu=mu,
+            p_crossover=p_cross,
+            mutation_r=p_mut,
+            budget=BUDGET_PER_RUN,
+            initial_pop=init_pop23
+        )
+
+        # Simple improvement score
+        score18 = best18
+        score23 = best23
+        total_score = score18 + score23
+
+        if total_score > sum(best_score):
+            best_score = (score18, score23)
+            best_params = (mu, p_mut, p_cross)
+        
+
+    return best_params, best_score
 
 
 if __name__ == "__main__":
+    best_params, best_score = tune_hyperparameters()
+    score18, score23 = best_score[0], best_score[1]
+    mu, mutation_rate, crossover_rate = best_params[0], best_params[1], best_params[2]
 
-    # Hyperparameter tuning to determine the best parameters for both problems
-    population_size, mutation_rate, crossover_rate = tune_hyperparameters()
-    print(population_size)
-    print(mutation_rate)
-    print(crossover_rate)
+    print(f"Best score for F18: {best_score[0]}")
+    print(f"Best score for F23: {best_score[1]}")
+    print("Best configuration found:")
+    print("mu =", mu)
+    print("mutation rate =", mutation_rate)
+    print("crossover rate =", crossover_rate)

@@ -28,4 +28,4 @@ def draw_sobol_samples(*bounds_list, n_dims, n_samples=2**10, scramble=True, see
 
     scaled_samples = qmc.scale(samples, bounds[:, 0], bounds[:, 1]) # Apply bounds
 
-    return scaled_samples
+    return list(scaled_samples)
