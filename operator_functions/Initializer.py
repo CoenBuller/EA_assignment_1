@@ -26,7 +26,6 @@ def initialize(mu: int, problem: object, rs=None):
 
     visited = set() # Set to store all the entire initial population
     pop = []
-    duplicates = 0
     if isinstance(problem, ioh.iohcpp.problem.NQueens): # Initialization for F23 
         """In each row and each column we need at most one queen. 
         We can leverage this during the initialization. Now the algorithm only needs to sort out the diagonal problem"""
@@ -39,9 +38,6 @@ def initialize(mu: int, problem: object, rs=None):
             new, visited = check_visited(individual, visited, problem)
             if new:
                 pop.append(individual)
-            else:
-                duplicates += 1
-
 
     else:
         while len(pop) != mu:
@@ -49,10 +45,8 @@ def initialize(mu: int, problem: object, rs=None):
             new, visited = check_visited(individual, visited, problem)
             if new:
                 pop.append(individual)
-            else:
-                duplicates += 1
 
     print(f"The number of duplicates that got filterd: {duplicates}")
         
     pop = np.array([list(individual) for individual in pop]) # Make sure that all the individuals in the population are stored as lists
-    return pop
+    return pop, visited

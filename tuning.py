@@ -7,7 +7,7 @@ from GA import s2631415_studentnumber2_GA, create_problem, initialize
 # Tuning settings
 TOTAL_TUNING_BUDGET = 100_000
 BUDGET_PER_RUN = 5_000     # per problem
-SEED = 69
+SEED = 6
 
 np.random.seed(SEED)
 

@@ -1,9 +1,10 @@
 from numpy.random import MT19937
 from numpy.random import RandomState, SeedSequence
 import numpy as np
+from operator_functions.Check_already_visited import check_visited
 
 
-def crossover(pop, pop_f, p_cross, rs=None):
+def crossover(pop, pop_f, p_cross, visited, problem, rs=None):
     """
     Function to handle the crossover operation.
     It uses a selection scheme weighted by fitness (softmax)
@@ -28,16 +29,18 @@ def crossover(pop, pop_f, p_cross, rs=None):
     exp_p = np.exp(pop_f - np.max(pop_f)) # Shift by max(pop_f) for numerical stability
     weights = exp_p/(np.sum(exp_p)) # Normalize to sum to 1
 
-    # For crossover we need for each offspring two parents. This means that we need to sample 2 * pop number of parents
-    mating_idx = rs.choice(pop.shape[0], size=2*len(pop), p=weights, replace=True)
-    mating = pop[mating_idx]
-
-    # 2. Crossover Operation
     offspring = []
-    # Iterate through the mating pool, taking two parents at a time
-    for i in range(1, len(mating), 2):
-        # Apply the uniform crossover function to the pair
-        o1, o2 = cross(mating[i-1].copy(), mating[i].copy(), crossover_probability=p_cross)
-        offspring.extend([o1, o2])
+    while len(offspring) != len(pop):
+        # For crossover we need for each offspring two parents. This means that we need to sample 2 * pop number of parents
+        mating_idx = rs.choice(pop.shape[0], size=2, p=weights, replace=True)
+        mating = pop[mating_idx]
 
-    return np.array(offspring)
+        # 2. Uniform crossover operation
+        o1, o2 = cross(mating[0].copy(), mating[1].copy(), crossover_probability=p_cross)
+        new1, visited1 = check_visited(o1, visited, problem)
+        new2, visited2 = check_visited(o2, visited, problem)
+        if (new1 & new2):
+            visited = visited1.union(visited2)
+            offspring.extend([o1, o2])
+
+    return np.array(offspring), visited

@@ -34,7 +34,7 @@ def s2631415_studentnumber2_GA(problem: ioh.problem.PBO, mu_plus_lambda=True, mu
     # Initialization: Create the initial population (mu individuals)
     # The individual length is determined by the problem dimension (problem.bounds.lb.shape[0])
     if initial_pop is None:
-        parents = initialize(mu, problem, rs=rs)
+        parents, visited = initialize(mu, problem, rs=rs)
     else:
         parents = initial_pop
     
@@ -48,10 +48,10 @@ def s2631415_studentnumber2_GA(problem: ioh.problem.PBO, mu_plus_lambda=True, mu
         # Update min and max for normalization of the scores
 
         # 1. Crossover: Generate the offspring population (lambda = mu in this setup)
-        offspring = crossover(parents, parents_f, p_cross=p_crossover, rs=rs)
+        offspring, visited = crossover(parents, parents_f, p_crossover, visited, problem, rs=rs)
         
         # 2. Mutation: Apply bit-flip mutation to the offspring
-        offspring = mutation(offspring, mutation_r, rs=rs)
+        offspring = mutation(offspring, mutation_r, visited, problem, rs=rs)
         
         # 3. Evaluation: Evaluate the new offspring
         offspring_f = np.array([problem(offspring[i]) for i in range(len(offspring))])
@@ -108,7 +108,7 @@ if __name__ == "__main__":
     f23_performance = []
     for run in range(10): 
         seed=run
-        min23, max23, maximum23 = s2631415_studentnumber2_GA(F23, mu=61, p_crossover=0.2880581939680177, mutation_r=0.04627953833400384, seed=seed)
+        min23, max23, maximum23 = s2631415_studentnumber2_GA(F23, mu=400, p_crossover=0.2880581939680177, mutation_r=0.04627953833400384, seed=seed)
         f23_performance.append(maximum23)
         print(f"\n Standardized increase compared to parents for F23 problem: {abs((maximum23-max23)/(max23))}")
         print(f"Absolute best: {maximum23} | Parents best: {max23} | Parents worst: {min23}")
@@ -123,8 +123,3 @@ if __name__ == "__main__":
 
 
     
-# The next step should be to update tuning.py based on the plan we discussed:
-# 1. Select only 5 configurations.
-# 2. Run each configuration for R=2 runs on both F18 and F23.
-# 3. Fix the budget to 5000 FEs in the tuning loop.
-# 4. Implement the logic to read the logger files, normalize the scores, and calculate the final tuning score S.
