@@ -95,7 +95,7 @@ if __name__ == "__main__":
     f18_performance = []
     for run in range(10): 
         seed = run
-        min18, max18, maximum18 = s2631415_studentnumber2_GA(F18, mu=119, p_crossover=0.37090214789269504, mutation_r=0.038676696048452155, seed=seed)
+        min18, max18, maximum18 = s2631415_studentnumber2_GA(F18, mu=61, p_crossover=0.2880581939680177, mutation_r=0.04627953833400384, seed=seed)
         print(f"\n Standardized increase compared to parents for F18 problem: {abs((maximum18-max18)/(max18))}")
         print(f"Absolute best: {maximum18} | Parents best: {max18} | Parents worst: {min18}")
         f18_performance.append(maximum18)
@@ -108,7 +108,7 @@ if __name__ == "__main__":
     f23_performance = []
     for run in range(10): 
         seed=run
-        min23, max23, maximum23 = s2631415_studentnumber2_GA(F23, mu=119, p_crossover=0.37090214789269504, mutation_r=0.038676696048452155, seed=seed)
+        min23, max23, maximum23 = s2631415_studentnumber2_GA(F23, mu=61, p_crossover=0.2880581939680177, mutation_r=0.04627953833400384, seed=seed)
         f23_performance.append(maximum23)
         print(f"\n Standardized increase compared to parents for F23 problem: {abs((maximum23-max23)/(max23))}")
         print(f"Absolute best: {maximum23} | Parents best: {max23} | Parents worst: {min23}")
@@ -118,8 +118,8 @@ if __name__ == "__main__":
         F23.reset()
     _logger.close() # type: ignore
 
-    print(f"Performance of GA on F18 \n      Mean: {np.mean(f18_performance)} | Std: {np.std(f18_performance)}")
-    print(f"Performance of GA on F18 \n      Mean: {np.mean(f23_performance)} | Std: {np.std(f23_performance)}")
+    print(f"\nPerformance of GA on F18 \n      Mean: {np.mean(f18_performance)} | Std: {np.std(f18_performance)}")
+    print(f"Performance of GA on F23 \n      Mean: {np.mean(f23_performance)} | Std: {np.std(f23_performance)}")
 
 
     
