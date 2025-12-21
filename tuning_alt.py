@@ -11,7 +11,7 @@ from ES import student4398270, create_problem as create_problem_es
 from log import IPL
 
 
-FINAL_BUDGET = 10000  # target budget 
+FINAL_BUDGET = 100000  # target budget 
 TUNING_ANCHORS = [500, 1000, 1500, 2000, 2500] # various anchor points
 REPETITIONS = 3 # avg over a few runs to reduce noise
 
@@ -52,7 +52,7 @@ def tune_ga():
     bounds = np.array([[5, 100], [0.001, 0.1], [0.1, 0.9], [0, 1]])
     
     #Draw Samples
-    n_configs = 16 
+    n_configs = 30 
     configs = draw_sobol_samples(*bounds, n_dims=4, n_samples=n_configs)
     
     best_config = None
@@ -91,12 +91,13 @@ def tune_ga():
 def tune_es():
     print("\n--- Tuning Evolutionary Strategy  ---")
     #Define Bounds
-    # mu: [1, 50], lambda: [1, 50]
-    bounds = np.array([[1, 50], [1, 50]])
+    # mu: [5, 100], lambda: [5, 100], crossover_type: [0,1] (boolean), initial_rate: [0.005,0.15], 
+    # adaptation_strength: [0.5,3.0]
+    bounds = np.array([[5, 100], [5, 100],[0,1],[0.005,0.15],[0.5,3.0]])
     
     #Draw Samples
-    n_configs = 16
-    configs = draw_sobol_samples(*bounds, n_dims=2, n_samples=n_configs)
+    n_configs = 30
+    configs = draw_sobol_samples(*bounds, n_dims=5, n_samples=n_configs)
     
     best_config = None
     best_pred_score = -float('inf')
@@ -105,14 +106,16 @@ def tune_es():
     for i, cfg in enumerate(configs):
         mu = int(cfg[0])
         lambda_ = int(cfg[1])
-        
-        # lambda must be at least 1, mu at least 1
-        mu = max(1, mu)
-        lambda_ = max(1, lambda_)
+        crossover_type = "two_point" if cfg[2]>0.5 else "uniform"
+        initial_rate = float(cfg[3])
+        adaptation_strength = float(cfg[4])
         
         params = {
             "mu": mu,
-            "lambda_": lambda_
+            "lambda_": lambda_,
+            "crossover_type":crossover_type,
+            "initial_rate":initial_rate,
+            "adaptation_strength":adaptation_strength
         }
         
         # Evaluate 
