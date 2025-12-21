@@ -3,6 +3,9 @@ from numpy.random import RandomState, SeedSequence
 import numpy as np
 from operator_functions.Check_already_visited import check_visited
 
+def hamming_distance(x1, x2):
+    return sum(x1 != x2)
+
 
 def crossover(pop, pop_f, p_cross, rs=None):
     """
@@ -30,12 +33,34 @@ def crossover(pop, pop_f, p_cross, rs=None):
     weights = exp_p/(np.sum(exp_p)) # Normalize to sum to 1
 
     offspring = []
+    paired_parents = []
     while (len(offspring) < len(pop)):
-        # For crossover we need for each offspring two parents. This means that we need to sample 2 * pop number of parents
         mating_idx = rs.choice(pop.shape[0], size=2, p=weights, replace=True)
         mating = pop[mating_idx]
-        # 2. Uniform crossover operation
-        o1, o2 = cross(mating[0].copy(), mating[1].copy(), crossover_probability=p_cross)
-        offspring.extend([o1, o2])
+        p1, p2 = mating[0].copy(), mating[1].copy()
 
-    return np.array(offspring)
+        # 2. Uniform crossover operation
+        o1, o2 = cross(p1, p2, crossover_probability=p_cross)
+
+        # 3. Implement first stage of crowding algorithm
+        possible_pairs = [(p1, o1), (p1, o2), (p2, o1), (p2, o2)]
+
+        first_pair, min_dist = (), np.inf
+        for pair in possible_pairs:
+            dist = hamming_distance(pair[0], pair[1])
+            if dist < min_dist:
+                min_dist = dist
+                first_pair = pair
+        
+        possible_pairs = [pair if pair[0] != closest_pair[0] for pair in possible_pairs]
+        second_pair = possible_pairs[0]
+        if hamming_distance(possible_pairs[1][0], possible_pairs[1][1]) < hamming_distance(second_pair[0], second_pair[1]):
+            second_pair = possible_pairs[1]
+
+        offspring.extend([first_pair[1], second_pair[1]])
+        paired_parents.extend([first_pair[0], second_pair[1]])
+
+
+        """Still need to implement that the parents fitness is also stored. This can be used for the selection phase to determine
+        if child is better than parent """
+    return np.array(offspring), np.array(paired_parents)
