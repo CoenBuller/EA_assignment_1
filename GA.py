@@ -37,6 +37,7 @@ def s2631415_studentnumber2_GA(problem: ioh.problem.PBO, mu_plus_lambda=True, mu
         parents, visited = initialize(mu, problem, rs=rs)
     else:
         parents = initial_pop
+        visited = set()
     
     # Evaluate the initial population
     parents_f = problem(parents) # problem(pop) automatically evaluates all individuals in the batch
@@ -44,26 +45,18 @@ def s2631415_studentnumber2_GA(problem: ioh.problem.PBO, mu_plus_lambda=True, mu
 
     # Main Evolutionary Loop
     # Check the number of evaluations using problem.state.evaluations (automatically tracked by IOH)
-    while problem.state.evaluations < budget:
-        # Update min and max for normalization of the scores
-
+    while problem.state.evaluations < budget - mu:        
         # 1. Crossover: Generate the offspring population (lambda = mu in this setup)
-        offspring, visited = crossover(parents, parents_f, p_crossover, visited, problem, rs=rs)
+        offspring = crossover(parents, parents_f, p_crossover, rs=rs)
         
         # 2. Mutation: Apply bit-flip mutation to the offspring
-        offspring = mutation(offspring, mutation_r, visited, problem, rs=rs)
+        offspring = mutation(offspring, mutation_r, rs=rs)
         
         # 3. Evaluation: Evaluate the new offspring
         offspring_f = np.array([problem(offspring[i]) for i in range(len(offspring))])
         
         # 4. Selection: Select the next generation (parents)
         parents, parents_f = selection(parents, parents_f, offspring, offspring_f, mu_plus_lambda, mu)
-
-
-        # Debug print: Shows the best fitness near the end of the run
-        if problem.state.evaluations > 4990:
-            ...
-            # print(f"Problem: {problem}, Evaluations: {problem.state.evaluations}, Best: {np.max(parents_f)}")
         
     return min_f, max_f, max(parents_f)
 
@@ -108,7 +101,7 @@ if __name__ == "__main__":
     f23_performance = []
     for run in range(10): 
         seed=run
-        min23, max23, maximum23 = s2631415_studentnumber2_GA(F23, mu=400, p_crossover=0.2880581939680177, mutation_r=0.04627953833400384, seed=seed)
+        min23, max23, maximum23 = s2631415_studentnumber2_GA(F23, mu=300, p_crossover=0.2880581939680177, mutation_r=0.04627953833400384, seed=seed)
         f23_performance.append(maximum23)
         print(f"\n Standardized increase compared to parents for F23 problem: {abs((maximum23-max23)/(max23))}")
         print(f"Absolute best: {maximum23} | Parents best: {max23} | Parents worst: {min23}")

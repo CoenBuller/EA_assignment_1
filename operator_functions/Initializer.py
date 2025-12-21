@@ -46,7 +46,6 @@ def initialize(mu: int, problem: object, rs=None):
             if new:
                 pop.append(individual)
 
-    print(f"The number of duplicates that got filterd: {duplicates}")
         
     pop = np.array([list(individual) for individual in pop]) # Make sure that all the individuals in the population are stored as lists
     return pop, visited

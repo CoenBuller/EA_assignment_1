@@ -4,7 +4,7 @@ import numpy as np
 from operator_functions.Check_already_visited import check_visited
 
 
-def crossover(pop, pop_f, p_cross, visited, problem, rs=None):
+def crossover(pop, pop_f, p_cross, rs=None):
     """
     Function to handle the crossover operation.
     It uses a selection scheme weighted by fitness (softmax)
@@ -30,17 +30,12 @@ def crossover(pop, pop_f, p_cross, visited, problem, rs=None):
     weights = exp_p/(np.sum(exp_p)) # Normalize to sum to 1
 
     offspring = []
-    while len(offspring) != len(pop):
+    while (len(offspring) < len(pop)):
         # For crossover we need for each offspring two parents. This means that we need to sample 2 * pop number of parents
         mating_idx = rs.choice(pop.shape[0], size=2, p=weights, replace=True)
         mating = pop[mating_idx]
-
         # 2. Uniform crossover operation
         o1, o2 = cross(mating[0].copy(), mating[1].copy(), crossover_probability=p_cross)
-        new1, visited1 = check_visited(o1, visited, problem)
-        new2, visited2 = check_visited(o2, visited, problem)
-        if (new1 & new2):
-            visited = visited1.union(visited2)
-            offspring.extend([o1, o2])
+        offspring.extend([o1, o2])
 
-    return np.array(offspring), visited
+    return np.array(offspring)

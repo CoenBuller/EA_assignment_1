@@ -39,7 +39,6 @@ def tune_hyperparameters():
 
         # --- F18 ---
         F18, _ = create_problem(dimension=50, fid=18)
-        init_pop18 = initialize(mu, F18)
 
         _, init_max18, best18 = s2631415_studentnumber2_GA(
             problem=F18,
@@ -47,7 +46,7 @@ def tune_hyperparameters():
             p_crossover=p_cross,
             mutation_r=p_mut,
             budget=BUDGET_PER_RUN,
-            initial_pop=init_pop18
+            initial_pop=None
         )
 
         # # --- F23 ---
