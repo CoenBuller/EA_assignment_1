@@ -34,9 +34,10 @@ def s2631415_studentnumber2_GA(problem: ioh.problem.PBO, mu_plus_lambda=True, mu
     # Initialization: Create the initial population (mu individuals)
     # The individual length is determined by the problem dimension (problem.bounds.lb.shape[0])
     if initial_pop is None:
-        parents = initialize(mu, problem, rs=rs)
+        parents, visited = initialize(mu, problem, rs=rs)
     else:
         parents = initial_pop
+        visited = set()
     
     # Evaluate the initial population
     parents_f = problem(parents) # problem(pop) automatically evaluates all individuals in the batch
@@ -44,11 +45,9 @@ def s2631415_studentnumber2_GA(problem: ioh.problem.PBO, mu_plus_lambda=True, mu
 
     # Main Evolutionary Loop
     # Check the number of evaluations using problem.state.evaluations (automatically tracked by IOH)
-    while problem.state.evaluations < budget:
-        # Update min and max for normalization of the scores
-
+    while problem.state.evaluations < budget - mu:        
         # 1. Crossover: Generate the offspring population (lambda = mu in this setup)
-        offspring = crossover(parents, parents_f, p_cross=p_crossover, rs=rs)
+        offspring = crossover(parents, parents_f, p_crossover, rs=rs)
         
         # 2. Mutation: Apply bit-flip mutation to the offspring
         offspring = mutation(offspring, mutation_r, rs=rs)
@@ -58,12 +57,6 @@ def s2631415_studentnumber2_GA(problem: ioh.problem.PBO, mu_plus_lambda=True, mu
         
         # 4. Selection: Select the next generation (parents)
         parents, parents_f = selection(parents, parents_f, offspring, offspring_f, mu_plus_lambda, mu)
-
-
-        # Debug print: Shows the best fitness near the end of the run
-        if problem.state.evaluations > 4990:
-            ...
-            # print(f"Problem: {problem}, Evaluations: {problem.state.evaluations}, Best: {np.max(parents_f)}")
         
     return min_f, max_f, max(parents_f)
 
@@ -95,7 +88,7 @@ if __name__ == "__main__":
     f18_performance = []
     for run in range(10): 
         seed = run
-        min18, max18, maximum18 = s2631415_studentnumber2_GA(F18, mu=119, p_crossover=0.37090214789269504, mutation_r=0.038676696048452155, seed=seed)
+        min18, max18, maximum18 = s2631415_studentnumber2_GA(F18, mu=61, p_crossover=0.2880581939680177, mutation_r=0.04627953833400384, seed=seed)
         print(f"\n Standardized increase compared to parents for F18 problem: {abs((maximum18-max18)/(max18))}")
         print(f"Absolute best: {maximum18} | Parents best: {max18} | Parents worst: {min18}")
         f18_performance.append(maximum18)
@@ -108,7 +101,7 @@ if __name__ == "__main__":
     f23_performance = []
     for run in range(10): 
         seed=run
-        min23, max23, maximum23 = s2631415_studentnumber2_GA(F23, mu=119, p_crossover=0.37090214789269504, mutation_r=0.038676696048452155, seed=seed)
+        min23, max23, maximum23 = s2631415_studentnumber2_GA(F23, mu=300, p_crossover=0.2880581939680177, mutation_r=0.04627953833400384, seed=seed)
         f23_performance.append(maximum23)
         print(f"\n Standardized increase compared to parents for F23 problem: {abs((maximum23-max23)/(max23))}")
         print(f"Absolute best: {maximum23} | Parents best: {max23} | Parents worst: {min23}")
@@ -118,13 +111,8 @@ if __name__ == "__main__":
         F23.reset()
     _logger.close() # type: ignore
 
-    print(f"Performance of GA on F18 \n      Mean: {np.mean(f18_performance)} | Std: {np.std(f18_performance)}")
-    print(f"Performance of GA on F18 \n      Mean: {np.mean(f23_performance)} | Std: {np.std(f23_performance)}")
+    print(f"\nPerformance of GA on F18 \n      Mean: {np.mean(f18_performance)} | Std: {np.std(f18_performance)}")
+    print(f"Performance of GA on F23 \n      Mean: {np.mean(f23_performance)} | Std: {np.std(f23_performance)}")
 
 
     
-# The next step should be to update tuning.py based on the plan we discussed:
-# 1. Select only 5 configurations.
-# 2. Run each configuration for R=2 runs on both F18 and F23.
-# 3. Fix the budget to 5000 FEs in the tuning loop.
-# 4. Implement the logic to read the logger files, normalize the scores, and calculate the final tuning score S.

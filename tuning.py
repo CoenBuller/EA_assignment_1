@@ -7,7 +7,7 @@ from GA import s2631415_studentnumber2_GA, create_problem, initialize
 # Tuning settings
 TOTAL_TUNING_BUDGET = 100_000
 BUDGET_PER_RUN = 5_000     # per problem
-SEED = 69
+SEED = 6
 
 np.random.seed(SEED)
 
@@ -34,12 +34,11 @@ def tune_hyperparameters():
     best_score = (-np.inf, -np.inf)
     best_params = (None, None, None)
     print(f"Testing {N_CONFIGS} configurations")
-    for _ in tqdm(range(N_CONFIGS)):
+    for _ in tqdm(range(2 * N_CONFIGS)):
         mu, p_mut, p_cross = sample_config()
 
         # --- F18 ---
         F18, _ = create_problem(dimension=50, fid=18)
-        init_pop18 = initialize(mu, F18)
 
         _, init_max18, best18 = s2631415_studentnumber2_GA(
             problem=F18,
@@ -47,25 +46,25 @@ def tune_hyperparameters():
             p_crossover=p_cross,
             mutation_r=p_mut,
             budget=BUDGET_PER_RUN,
-            initial_pop=init_pop18
+            initial_pop=None
         )
 
-        # --- F23 ---
-        F23, _ = create_problem(dimension=49, fid=23)
-        init_pop23 = initialize(mu, F23)
+        # # --- F23 ---
+        # F23, _ = create_problem(dimension=49, fid=23)
+        # init_pop23 = initialize(mu, F23)
 
-        _, init_max23, best23 = s2631415_studentnumber2_GA(
-            problem=F23,
-            mu=mu,
-            p_crossover=p_cross,
-            mutation_r=p_mut,
-            budget=BUDGET_PER_RUN,
-            initial_pop=init_pop23
-        )
+        # _, init_max23, best23 = s2631415_studentnumber2_GA(
+        #     problem=F23,
+        #     mu=mu,
+        #     p_crossover=p_cross,
+        #     mutation_r=p_mut,
+        #     budget=BUDGET_PER_RUN,
+        #     initial_pop=init_pop23
+        # )
 
         # Simple improvement score
         score18 = best18
-        score23 = best23
+        score23 = 0
         total_score = score18 + score23
 
         if total_score > sum(best_score):
