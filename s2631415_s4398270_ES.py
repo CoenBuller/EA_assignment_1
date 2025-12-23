@@ -5,6 +5,8 @@ from numpy.random import MT19937, RandomState, SeedSequence
 
 # Initialize Random State
 rs = RandomState(MT19937(SeedSequence(69)))
+budget = 5000
+dimension = 10
 
 def student4398270_student2631415_ES(problem: ioh.problem.BBOB,       
                    budget=5000,
@@ -111,41 +113,44 @@ def student4398270_student2631415_ES(problem: ioh.problem.BBOB,
           f"| Best: {problem.state.current_best.y-problem.optimum.y}")          
     if return_history:
         return history_trace
+    
+def create_problem(fid: int):
+    # Declaration of problems to be tested.
+    problem = get_problem(fid, dimension=dimension, instance=1, problem_class=ProblemClass.BBOB)
+
+    # Create default logger compatible with IOHanalyzer
+    # `root` indicates where the output files are stored.
+    # `folder_name` is the name of the folder containing all output. You should compress the folder 'run' and upload it to IOHanalyzer.
+    l = logger.Analyzer(
+        root="data",  # the working directory in which a folder named `folder_name` (the next argument) will be created to store data
+        folder_name="run_F23_stats",  # the folder name to which the raw performance data will be stored
+        algorithm_name="1+10_EA_var_ctrl",  # name of your algorithm
+        algorithm_info="Practical assignment part2 of the EA course",
+    )
+    # attach the logger to the problem
+    problem.attach_logger(l)
+    return problem, l
 
 if __name__ == "__main__":
     DIMENSION = 10
     FID = 23
-    RUNS = 20
     
-    print(f"--- Running (1+10) EA_var_ctrl on F{FID} ({RUNS} runs) ---")
+    print(f"--- Running (1+10) EA_var_ctrl on F{FID} ({20} runs) ---")
     
-    # This creates the standard .dat / .json files
-    problem_template = get_problem(FID, dimension=DIMENSION, instance=1, problem_class=ProblemClass.BBOB)
-    l = logger.Analyzer(
-        root="data",
-        folder_name="run_F23_stats",
-        algorithm_name="1+10_EA_var_ctrl",
-        algorithm_info="Adaptive ES with Variance Control"
-    )
+    F23, _logger = create_problem(23)
     
     all_run_histories = []
     final_bests = []
     
-    for r in range(RUNS):
-        # We must re-create or reset the problem and attach logger every time
-        # to ensure clean logging
-        p = get_problem(FID, dimension=DIMENSION, instance=1, problem_class=ProblemClass.BBOB)
-        p.attach_logger(l)
-        
-        # Run Algorithm and capture internal history
-        history = student4398270_student2631415_ES(p, budget=5000, return_history=True)
-        
-        # Store Data
+    for run in range(20):
+
+        history = student4398270_student2631415_ES(F23, budget=5000, return_history=True)
+        #Store Data
         all_run_histories.append(history)
-        final_bests.append(p.state.current_best.y)
+        final_bests.append(F23.state.current_best.y)
         
-        p.reset()
+        F23.reset()
         
-    l.close() # Save IOH files
+    _logger.close() 
     print(f"IOH Logs saved to 'data/run_F23_stats")
     
