@@ -3,11 +3,9 @@ from numpy.random import RandomState, SeedSequence
 import numpy as np
 from operator_functions.Check_already_visited import check_visited
 
-def hamming_distance(x1, x2):
-    return sum(x1 != x2)
 
 
-def crossover(pop, pop_f, p_cross, rs=None):
+def crossover(pop, pop_f, p_cross, k=8, rs=None):
     """
     Function to handle the crossover operation.
     It uses a selection scheme weighted by fitness (softmax)
@@ -27,40 +25,22 @@ def crossover(pop, pop_f, p_cross, rs=None):
                 if prob <= 0.5:
                     p1[i], p2[i] = p2[i], p1[i]
         return p1, p2
-    
-    # 1. Selection of Mating Pairs (Softmax-Weighted)
-    exp_p = np.exp(pop_f - np.max(pop_f)) # Shift by max(pop_f) for numerical stability
-    weights = exp_p/(np.sum(exp_p)) # Normalize to sum to 1
 
     offspring = []
-    paired_parents = []
     while (len(offspring) < len(pop)):
-        mating_idx = rs.choice(pop.shape[0], size=2, p=weights, replace=True)
+        mating_idx = rs.choice(pop.shape[0], size=2*k, replace=True)
         mating = pop[mating_idx]
-        p1, p2 = mating[0].copy(), mating[1].copy()
+        fitness_values = np.array(pop_f)[mating_idx]
+
+        p1_idx = np.argmax(fitness_values[:k])
+        p2_idx = np.argmax(fitness_values[k:])
+
+        p1, p2 = mating[p1_idx].copy(), mating[p2_idx].copy()
+
 
         # 2. Uniform crossover operation
         o1, o2 = cross(p1, p2, crossover_probability=p_cross)
+        offspring.extend([o1, o2])
 
-        # 3. Implement first stage of crowding algorithm
-        possible_pairs = [(p1, o1), (p1, o2), (p2, o1), (p2, o2)]
-
-        first_pair, min_dist = (), np.inf
-        for pair in possible_pairs:
-            dist = hamming_distance(pair[0], pair[1])
-            if dist < min_dist:
-                min_dist = dist
-                first_pair = pair
-        
-        possible_pairs = [pair if pair[0] != closest_pair[0] for pair in possible_pairs]
-        second_pair = possible_pairs[0]
-        if hamming_distance(possible_pairs[1][0], possible_pairs[1][1]) < hamming_distance(second_pair[0], second_pair[1]):
-            second_pair = possible_pairs[1]
-
-        offspring.extend([first_pair[1], second_pair[1]])
-        paired_parents.extend([first_pair[0], second_pair[1]])
-
-
-        """Still need to implement that the parents fitness is also stored. This can be used for the selection phase to determine
-        if child is better than parent """
-    return np.array(offspring), np.array(paired_parents)
+    offspring = np.array(offspring)
+    return offspring
