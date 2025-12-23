@@ -7,7 +7,7 @@ def run_race_es_continuous(total_tuning_budget=100000):
     print("--- Tuning Continuous ES (F23 Katsuura) with Successive Halving ---")
 
     # Search Space (Sobol)
-    # Params: [mu, lambda, initial_sigma, adaptation_strength]
+    # Params
     bounds = np.array([
     [0.5,4.0], #Initial sigma
     [10, 100],      # Stagnation Limit
@@ -81,7 +81,7 @@ def run_race_es_continuous(total_tuning_budget=100000):
 
         # Selection (min)
         active_candidates = [c for c in candidates if c["active"]]
-        # Sort Ascending (Lower score is better for BBOB)
+        # Sort Ascending (Lower score is better)
         active_candidates.sort(key=lambda x: x["score"]) 
         
         print(f"Round {r_idx+1} Best Score: {active_candidates[0]['score']}")
