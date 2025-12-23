@@ -6,9 +6,7 @@ from numpy.random import MT19937, RandomState, SeedSequence
 # Initialize Random State
 rs = RandomState(MT19937(SeedSequence(69)))
 
-def student4398270(problem: ioh.problem.BBOB, 
-                   mu=1,            
-                   lambda_=10,      
+def student4398270_student2631415_ES(problem: ioh.problem.BBOB,       
                    budget=5000,
                    initial_sigma=1.44, 
                    return_history=False, # flag for analysis
@@ -140,7 +138,7 @@ if __name__ == "__main__":
         p.attach_logger(l)
         
         # Run Algorithm and capture internal history
-        history = student4398270(p, budget=5000, return_history=True)
+        history = student4398270_student2631415_ES(p, budget=5000, return_history=True)
         
         # Store Data
         all_run_histories.append(history)

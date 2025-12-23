@@ -1,9 +1,9 @@
 import numpy as np
 from sobol_sampling import draw_sobol_samples
 from ioh import get_problem, ProblemClass
-from ES import student4398270 
+from ES import student4398270_student2631415_ES 
 
-def run_race_es_continuous(total_tuning_budget=100000):
+def student4398270_student2631415_tuning(total_tuning_budget=100000):
     print("--- Tuning Continuous ES (F23 Katsuura) with Successive Halving ---")
 
     # Search Space (Sobol)
@@ -62,7 +62,7 @@ def run_race_es_continuous(total_tuning_budget=100000):
 
                 problem = get_problem(23, dimension=10, instance=1, problem_class=ProblemClass.BBOB)
                 
-                student4398270(
+                student4398270_student2631415_ES(
                     problem, 
                     initial_sigma=candidate["initial_sigma"], 
                     stagnation_limit=candidate["stagnation_limit"],
@@ -101,4 +101,4 @@ def run_race_es_continuous(total_tuning_budget=100000):
     return winner
 
 if __name__ == "__main__":
-    best_params = run_race_es_continuous()
+    best_params = student4398270_student2631415_tuning()
