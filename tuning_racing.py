@@ -1,7 +1,7 @@
 import numpy as np
 from sobol_sampling import draw_sobol_samples
 from ioh import get_problem, ProblemClass
-from ES import student4398270_student2631415_ES 
+from s2631415_s4398270_ES import student4398270_student2631415_ES 
 
 def student4398270_student2631415_tuning(total_tuning_budget=100000):
     print("--- Tuning Continuous ES (F23 Katsuura) with Successive Halving ---")
