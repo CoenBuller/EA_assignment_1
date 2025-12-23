@@ -18,6 +18,13 @@ def decode_queens(arr):
     return one_hot.astype(int)
 
 
+def expand_LABS_bits(bitstring):
+    assert(len(bitstring) == 25)
+    first_half = np.array(bitstring)
+    second_half = np.array([abs(bit - (1+i)%2) for i, bit in enumerate(first_half)])
+    full_sequence = np.concatenate([first_half, second_half])
+    return full_sequence
+
 def initialize(mu: int, problem: object, rs=None):
     """Function is used for the initialization of the population"""
     
@@ -41,7 +48,7 @@ def initialize(mu: int, problem: object, rs=None):
 
     else:
         while len(pop) != mu:
-            individual = rs.choice(2, (problem.bounds.lb.shape[0]), replace=True)
+            individual = rs.choice(2, int((problem.bounds.lb.shape[0])), replace=True)
             new, visited = check_visited(individual, visited, problem)
             if new:
                 pop.append(individual)

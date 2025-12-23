@@ -14,10 +14,13 @@ from operator_functions.Initializer import initialize
 from operator_functions.Crossover import crossover
 from operator_functions.Mutate import mutation
 from operator_functions.Selector import selection
+from operator_functions.Update_k import update_k
+from operator_functions.Evaluate import Evaluate
+from operator_functions.Local_search import local_search
 
 
 
-def s2631415_studentnumber2_GA(problem: ioh.problem.PBO, mu_plus_lambda=True, mu=20, p_crossover=0.5, mutation_r=0.02, budget=5000, initial_pop=None, seed=69) -> tuple[float|int, float|int, float]:
+def s2631415_studentnumber2_GA(problem: ioh.problem.PBO, mu_plus_lambda=True, mu=20, p_crossover=0.5, mutation_r=0.02, k_max=4, budget=5000, local_freq=5, seed=69) -> tuple[float|int, float|int, float]:
     """
     The main Genetic Algorithm (GA) loop.
     
@@ -30,33 +33,49 @@ def s2631415_studentnumber2_GA(problem: ioh.problem.PBO, mu_plus_lambda=True, mu
         budget (int): Maximum number of function evaluations (FEs).
     """
     rs = RandomState(MT19937(SeedSequence(seed)))
+    evaluater = Evaluate(problem, budget)
 
     # Initialization: Create the initial population (mu individuals)
     # The individual length is determined by the problem dimension (problem.bounds.lb.shape[0])
-    if initial_pop is None:
-        parents, visited = initialize(mu, problem, rs=rs)
-    else:
-        parents = initial_pop
-        visited = set()
+    parents, visited = initialize(mu, problem, rs=rs)
     
     # Evaluate the initial population
-    parents_f = problem(parents) # problem(pop) automatically evaluates all individuals in the batch
+    parents_f = evaluater.eval(parents) # problem(pop) automatically evaluates all individuals in the batch
     min_f, max_f = min(parents_f), max(parents_f) # Min, and max evaluation values
 
-    # Main Evolutionary Loop
-    # Check the number of evaluations using problem.state.evaluations (automatically tracked by IOH)
-    while problem.state.evaluations < budget - mu:        
+    stagnated_runs = 0
+    while evaluater.eval_count < budget:        
         # 1. Crossover: Generate the offspring population (lambda = mu in this setup)
-        offspring = crossover(parents, parents_f, p_crossover, rs=rs)
+        k = update_k(current_iteration=evaluater.iterations, 
+                    max_iteration=evaluater.budget, 
+                    max_k=k_max, 
+                    stagnated_runs=stagnated_runs)
+
+        offspring = crossover(parents, parents_f, p_crossover, k, rs=rs)
         
         # 2. Mutation: Apply bit-flip mutation to the offspring
         offspring = mutation(offspring, mutation_r, rs=rs)
         
         # 3. Evaluation: Evaluate the new offspring
-        offspring_f = np.array([problem(offspring[i]) for i in range(len(offspring))])
+        offspring_f = evaluater.eval(offspring)
         
+        current_best = max(parents_f)
+
         # 4. Selection: Select the next generation (parents)
-        parents, parents_f = selection(parents, parents_f, offspring, offspring_f, mu_plus_lambda, mu)
+        parents, parents_f = selection(parents, parents_f, offspring, offspring_f, mu)
+
+        if evaluater.iterations % local_freq == 0:
+            local_search_individual, local_search_fitness_score = local_search(parents[0], parents_f[0], evaluater)
+            if local_search_individual is not None:
+                parents[0], parents_f[0] = local_search_individual, local_search_fitness_score
+
+        new_best_f = max(parents_f)
+        
+        if new_best_f <= current_best:
+            stagnated_runs += mu
+        else:
+            stagnated_runs = 0
+        
         
     return min_f, max_f, max(parents_f)
 
@@ -88,7 +107,7 @@ if __name__ == "__main__":
     f18_performance = []
     for run in range(10): 
         seed = run
-        min18, max18, maximum18 = s2631415_studentnumber2_GA(F18, mu=61, p_crossover=0.2880581939680177, mutation_r=0.04627953833400384, seed=seed)
+        min18, max18, maximum18 = s2631415_studentnumber2_GA(F18, mu=64, p_crossover=0.22707223864798573, mutation_r=0.049023001749565254, seed=seed)
         print(f"\n Standardized increase compared to parents for F18 problem: {abs((maximum18-max18)/(max18))}")
         print(f"Absolute best: {maximum18} | Parents best: {max18} | Parents worst: {min18}")
         f18_performance.append(maximum18)
@@ -101,7 +120,7 @@ if __name__ == "__main__":
     f23_performance = []
     for run in range(10): 
         seed=run
-        min23, max23, maximum23 = s2631415_studentnumber2_GA(F23, mu=300, p_crossover=0.2880581939680177, mutation_r=0.04627953833400384, seed=seed)
+        min23, max23, maximum23 = s2631415_studentnumber2_GA(F23, mu=64, p_crossover=0.22707223864798573, mutation_r=0.049023001749565254, seed=seed)
         f23_performance.append(maximum23)
         print(f"\n Standardized increase compared to parents for F23 problem: {abs((maximum23-max23)/(max23))}")
         print(f"Absolute best: {maximum23} | Parents best: {max23} | Parents worst: {min23}")
