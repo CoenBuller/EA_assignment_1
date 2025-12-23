@@ -9,11 +9,11 @@ def run_race_es_continuous(total_tuning_budget=100000):
     # Search Space (Sobol)
     # Params: [mu, lambda, initial_sigma, adaptation_strength]
     bounds = np.array([
-        [5, 50],       # mu: Start small-ish to allow IPOP growth
-        [20, 200],     # lambda: Needs to be >> mu
-        [0.5, 1.5],    # initial_sigma: Domain is [-5, 5], so step size 1-4 covers well
-        [0.1, 0.6]     # adaptation_strength: Around 1/sqrt(10) ~= 0.3
-    ])
+    [0.5,4.0], #Initial sigma
+    [10, 100],      # Stagnation Limit
+    [1e-8, 1e-3],   # Sigma Threshold (More conservative range)
+    [0.05, 0.4]     # Factor Fail Coefficient (Small = Slow decay, Large = Fast decay)
+])
     
     # Generate 25 candidate configurations
     n_configs = 25
@@ -21,18 +21,17 @@ def run_race_es_continuous(total_tuning_budget=100000):
     
     candidates = []
     for cfg in configs:
-        mu_val = int(cfg[0])
-        lambda_val = int(cfg[1])
-        
-        # Ensure lambda is at least 2x mu (basic ES rule)
-        if lambda_val < 2 * mu_val:
-            lambda_val = 2 * mu_val
+        initial_sigma = float(cfg[0])
+        stagnation_limit = int(cfg[1])
+        sigma_threshold = float(cfg[2])
+        factor_fail = float(cfg[3])
+      
             
         candidates.append({
-            "mu": mu_val,
-            "lambda_": lambda_val,
-            "initial_sigma": float(cfg[2]),
-            "adaptation_strength": float(cfg[3]),
+            "initial_sigma": initial_sigma,
+            "stagnation_limit": stagnation_limit,
+            "sigma_threshold": sigma_threshold,
+            "factor_fail": factor_fail,
             "active": True,
             "score": float('inf') # Initialize with inf for Minimization
         })
@@ -65,11 +64,11 @@ def run_race_es_continuous(total_tuning_budget=100000):
                 
                 student4398270(
                     problem, 
-                    mu=candidate["mu"], 
-                    lambda_=candidate["lambda_"],
+                    initial_sigma=candidate["initial_sigma"], 
+                    stagnation_limit=candidate["stagnation_limit"],
                     budget=budget_per_run,
-                    initial_sigma=candidate["initial_sigma"],
-                    adaptation_strength=candidate["adaptation_strength"]
+                    sigma_threshold=candidate["sigma_threshold"],
+                    factor_fail=candidate["factor_fail"]
                 )
                 
                 # Lower is better
@@ -77,8 +76,8 @@ def run_race_es_continuous(total_tuning_budget=100000):
                 used_budget += budget_per_run
             
             candidate["score"] = avg_score / repetitions
-            print(f"Config {i}: mu={candidate['mu']}, lam={candidate['lambda_']}, "
-                  f"sig={candidate['initial_sigma']:.2f} -> Score: {candidate['score']:.4f}")
+            print(f"Config {i}: initial_sigma={candidate['initial_sigma']}, stagnation_limit={candidate['stagnation_limit']}, "
+                  f"sigma_threshold={candidate['sigma_threshold']:.2f}, factor_fail={candidate['factor_fail']},-> Score: {candidate['score']:.4f}")
 
         # Selection (min)
         active_candidates = [c for c in candidates if c["active"]]
