@@ -21,7 +21,7 @@ from operator_functions.Local_search import local_search
 
 
 
-def s2631415_studentnumber2_GA(problem: ioh.problem.PBO, mu_plus_lambda=True, mu=20, p_crossover=0.5, mutation_r=0.02, k_max=4, budget=5000, local_freq=5, seed=69) -> tuple[float|int, float|int, float]:
+def s2631415_s4398270_GA(problem: ioh.problem.PBO, mu_plus_lambda=True, mu=20, p_crossover=0.5, mutation_r=0.02, k_max=4, budget=5000, local_freq=5, seed=69) -> tuple[float|int, float|int, float]:
     """
     The main Genetic Algorithm (GA) loop.
     
@@ -108,7 +108,7 @@ if __name__ == "__main__":
     f18_performance = []
     for run in range(10): 
         seed = run
-        min18, max18, maximum18 = s2631415_studentnumber2_GA(F18, mu=64, p_crossover=0.22707223864798573, mutation_r=0.049023001749565254, seed=seed)
+        min18, max18, maximum18 = s2631415_s4398270_GA(F18, mu=64, p_crossover=0.22707223864798573, mutation_r=0.049023001749565254, seed=seed)
         print(f"\n Standardized increase compared to parents for F18 problem: {abs((maximum18-max18)/(max18))}")
         print(f"Absolute best: {maximum18} | Parents best: {max18} | Parents worst: {min18}")
         f18_performance.append(maximum18)
@@ -121,7 +121,7 @@ if __name__ == "__main__":
     f23_performance = []
     for run in range(10): 
         seed=run
-        min23, max23, maximum23 = s2631415_studentnumber2_GA(F23, mu=64, p_crossover=0.22707223864798573, mutation_r=0.049023001749565254, seed=seed)
+        min23, max23, maximum23 = s2631415_s4398270_GA(F23, mu=64, p_crossover=0.22707223864798573, mutation_r=0.049023001749565254, seed=seed)
         f23_performance.append(maximum23)
         print(f"\n Standardized increase compared to parents for F23 problem: {abs((maximum23-max23)/(max23))}")
         print(f"Absolute best: {maximum23} | Parents best: {max23} | Parents worst: {min23}")

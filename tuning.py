@@ -1,7 +1,7 @@
 from typing import Tuple
 import numpy as np
 from tqdm import tqdm
-from GA import s2631415_studentnumber2_GA, create_problem, initialize
+from GA import s2631415_s4398270_GA, create_problem, initialize
 
 
 # Tuning settings
@@ -15,7 +15,6 @@ np.random.seed(SEED)
 MU_RANGE = (20, 80)
 MUT_RANGE = (0.02, 0.4)
 CROSS_RANGE = (0.1, 0.5)
-K_RANGE = (3, 6)
 LOCAL_FREQ = (5, 10)
 
 # Each config costs 2 * BUDGET_PER_RUN
@@ -43,7 +42,7 @@ def tune_hyperparameters():
         # --- F18 ---
         F18, _ = create_problem(dimension=50, fid=18)
 
-        _, init_max18, best18 = s2631415_studentnumber2_GA(
+        _, init_max18, best18 = s2631415_s4398270_GA(
             problem=F18,
             mu=mu,
             p_crossover=p_cross,
