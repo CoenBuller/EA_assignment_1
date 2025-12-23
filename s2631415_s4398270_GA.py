@@ -9,11 +9,12 @@ import numpy as np
 import ioh 
 from ioh import get_problem, logger, ProblemClass
 
-# Import custom operator functions
+# Import custom operator functions 
+
+"""All the oprator functions can be found in the 'operator_function' folder"""
 from operator_functions.Initializer import initialize
 from operator_functions.Crossover import crossover
 from operator_functions.Mutate import mutation
-
 from operator_functions.Selector import selection
 from operator_functions.Update_k import update_k
 from operator_functions.Evaluate import Evaluate

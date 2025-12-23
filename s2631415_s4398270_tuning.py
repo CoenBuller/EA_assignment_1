@@ -1,7 +1,7 @@
 from typing import Tuple
 import numpy as np
 from tqdm import tqdm
-from GA import s2631415_s4398270_GA, create_problem, initialize
+from s2631415_s4398270_GA import s2631415_s4398270_GA, create_problem, initialize
 
 
 # Tuning settings
